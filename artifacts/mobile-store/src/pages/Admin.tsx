@@ -10,7 +10,7 @@ import { Edit, Trash2, PlusCircle, Save, X, PackageCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { getToken } from "@/lib/auth";
+import { getToken, API_BASE } from "@/lib/auth";
 
 const emptyForm = {
   name: "",
@@ -57,7 +57,7 @@ export default function Admin() {
   const loadOrders = () => {
     const token = getToken();
     setOrdersLoading(true);
-    fetch("/api/admin/orders", {
+    fetch(`${API_BASE}/admin/orders`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then((r) => (r.ok ? r.json() : []))
@@ -72,7 +72,7 @@ export default function Admin() {
   const handleConfirmOrder = async (id: number) => {
     const token = getToken();
     try {
-      const res = await fetch(`/api/admin/orders/${id}/status`, {
+      const res = await fetch(`${API_BASE}/admin/orders/${id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +91,7 @@ export default function Admin() {
   const handleMarkDelivered = async (id: number) => {
     const token = getToken();
     try {
-      const res = await fetch(`/api/admin/orders/${id}/status`, {
+      const res = await fetch(`${API_BASE}/admin/orders/${id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +111,7 @@ export default function Admin() {
     if (!confirm("Delete this order? This cannot be undone.")) return;
     const token = getToken();
     try {
-      const res = await fetch(`/api/admin/orders/${id}`, {
+      const res = await fetch(`${API_BASE}/admin/orders/${id}`, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -127,7 +127,7 @@ export default function Admin() {
     if (!confirm("Clear ALL orders? This cannot be undone.")) return;
     const token = getToken();
     try {
-      const res = await fetch("/api/admin/orders", {
+      const res = await fetch(`${API_BASE}/admin/orders`, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -531,6 +531,7 @@ export default function Admin() {
     </div>
   );
 }
+
 
 
 

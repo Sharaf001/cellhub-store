@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { register, login, setToken } from "@/lib/auth";
+import { register, login, setToken, API_BASE } from "@/lib/auth";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Mode = "login" | "register";
@@ -87,7 +87,7 @@ export default function Login() {
         if (roleRef.current === "admin" && adminSecretRef.current) {
           body.adminSecret = adminSecretRef.current;
         }
-        const res = await fetch("/api/auth/google", {
+        const res = await fetch(`${API_BASE}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -327,4 +327,5 @@ export default function Login() {
     </div>
   );
 }
+
 

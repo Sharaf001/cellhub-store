@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { getToken } from "@/lib/auth";
+import { getToken, API_BASE } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, User, Lock, Mail } from "lucide-react";
 
@@ -34,7 +34,7 @@ export default function Account() {
       return;
     }
     const token = getToken();
-    fetch("/api/auth/me", {
+    fetch(`${API_BASE}/auth/me`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -51,7 +51,7 @@ export default function Account() {
     setSaving(true);
     try {
       const token = getToken();
-      const res = await fetch("/api/auth/change-password", {
+      const res = await fetch(`${API_BASE}/auth/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -181,3 +181,4 @@ export default function Account() {
     </div>
   );
 }
+

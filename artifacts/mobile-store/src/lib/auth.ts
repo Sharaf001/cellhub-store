@@ -11,7 +11,7 @@ export function removeToken(): void {
 export function isAuthenticated(): boolean {
   return !!getToken();
 }
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+export const API_BASE = `${import.meta.env.VITE_API_URL || ""}/api`;
 export type AuthUser = { id: number; username: string; isAdmin: boolean };
 export type AuthResult = { token: string; user: AuthUser };
 export async function register(
@@ -72,3 +72,4 @@ export function getCurrentUser(): AuthUser | null {
   if (!token) return null;
   return parseToken(token);
 }
+

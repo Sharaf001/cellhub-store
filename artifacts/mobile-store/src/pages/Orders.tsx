@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { getToken } from "@/lib/auth";
+import { getToken, API_BASE } from "@/lib/auth";
 import { PackageSearch, Banknote } from "lucide-react";
 
 type OrderItem = {
@@ -39,7 +39,7 @@ export default function Orders() {
       return;
     }
     const token = getToken();
-    fetch("/api/orders", {
+    fetch(`${API_BASE}/orders`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then((r) => (r.ok ? r.json() : []))
@@ -117,4 +117,5 @@ export default function Orders() {
     </div>
   );
 }
+
 

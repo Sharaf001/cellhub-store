@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { getToken } from "@/lib/auth";
+import { getToken, API_BASE } from "@/lib/auth";
 import { Banknote, ShoppingBag } from "lucide-react";
 
 export default function Checkout() {
@@ -50,7 +50,7 @@ export default function Checkout() {
     setSubmitting(true);
     try {
       const token = getToken();
-      const res = await fetch("/api/orders", {
+      const res = await fetch(`${API_BASE}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -160,3 +160,4 @@ export default function Checkout() {
     </div>
   );
 }
+
