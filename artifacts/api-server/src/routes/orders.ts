@@ -7,13 +7,13 @@ import { db, cartItemsTable, productsTable, ordersTable, orderItemsTable, usersT
 const router: IRouter = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "cellhub-dev-secret-key-change-in-production";
-const ADMIN_EMAIL = "mohamadsharafeddine1@gmail.com";
+const ADMIN_EMAIL = process.env.GMAIL_USER || "";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "mohamadsharafeddine1@gmail.com",
-    pass: "jintggjnlqvdvidi",
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
 
@@ -22,7 +22,7 @@ async function sendAdminOrderNotification(order: any, items: any[]) {
     .map((i) => `<li>${i.product.name} x${i.quantity} &mdash; $${(i.product.price * i.quantity).toFixed(2)}</li>`)
     .join("");
   await transporter.sendMail({
-    from: '"CellHub" <mohamadsharafeddine1@gmail.com>',
+    from: `"CellHub" <${process.env.GMAIL_USER}>`,
     to: ADMIN_EMAIL,
     subject: `New order #${order.id} needs confirmation`,
     html: `
@@ -41,7 +41,7 @@ async function sendAdminOrderNotification(order: any, items: any[]) {
 
 async function sendCustomerConfirmationEmail(to: string, customerName: string, orderId: number) {
   await transporter.sendMail({
-    from: '"CellHub" <mohamadsharafeddine1@gmail.com>',
+    from: `"CellHub" <${process.env.GMAIL_USER}>`,
     to,
     subject: `Your CellHub order #${orderId} is confirmed`,
     html: `
@@ -268,3 +268,4 @@ router.delete("/admin/orders", async (req, res): Promise<void> => {
 });
 
 export default router;
+

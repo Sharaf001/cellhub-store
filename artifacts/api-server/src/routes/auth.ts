@@ -17,15 +17,15 @@ const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "mohamadsharafeddine1@gmail.com",
-    pass: "jintggjnlqvdvidi",
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
 
 async function sendVerificationEmail(to: string, username: string, token: string) {
   const link = `${APP_URL}/verify?token=${token}`;
   await transporter.sendMail({
-    from: '"CellHub" <mohamadsharafeddine1@gmail.com>',
+    from: `"CellHub" <${process.env.GMAIL_USER}>`,
     to,
     subject: "Verify your CellHub account",
     html: `
@@ -47,7 +47,7 @@ async function sendVerificationEmail(to: string, username: string, token: string
 async function sendResetEmail(to: string, username: string, token: string) {
   const link = `${APP_URL}/reset-password?token=${token}`;
   await transporter.sendMail({
-    from: '"CellHub" <mohamadsharafeddine1@gmail.com>',
+    from: `"CellHub" <${process.env.GMAIL_USER}>`,
     to,
     subject: "Reset your CellHub password",
     html: `
@@ -368,6 +368,7 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
 });
 
 export default router;
+
 
 
 
