@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
-import { Smartphone, Lock, User, Mail, KeyRound, LogIn, UserPlus, ShieldCheck, UserCircle, MailCheck } from "lucide-react";
+import { Smartphone, Lock, User, Mail, KeyRound, LogIn, UserPlus, ShieldCheck, UserCircle, MailCheck, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [adminSecret, setAdminSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const [registeredMessage, setRegisteredMessage] = useState<string | null>(null);
@@ -291,14 +292,22 @@ export default function Login() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 pr-9"
                   required
                   minLength={mode === "register" ? 6 : 1}
                   autoComplete={mode === "register" ? "new-password" : "current-password"}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {mode === "register" && (
                 <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
@@ -327,5 +336,6 @@ export default function Login() {
     </div>
   );
 }
+
 
 

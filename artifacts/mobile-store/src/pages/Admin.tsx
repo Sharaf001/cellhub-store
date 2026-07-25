@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Edit, Trash2, PlusCircle, Save, X, PackageCheck } from "lucide-react";
+import { Edit, Trash2, PlusCircle, Save, X, PackageCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +50,20 @@ export default function Admin() {
 
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+
+  const PRODUCTS_PER_PAGE = 10;
+  const [productPage, setProductPage] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const filteredProducts = products?.filter(p => categoryFilter === "all" || p.category === categoryFilter);
+  const totalProductPages = Math.max(1, Math.ceil((filteredProducts?.length || 0) / PRODUCTS_PER_PAGE));
+  const paginatedProducts = filteredProducts?.slice(
+    (productPage - 1) * PRODUCTS_PER_PAGE,
+    productPage * PRODUCTS_PER_PAGE
+  );
+  const handleCategoryFilterChange = (value: string) => {
+    setCategoryFilter(value);
+    setProductPage(1);
+  };
 
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -215,127 +229,140 @@ export default function Admin() {
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-12 space-y-12">
         <div>
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
             <h1 className="text-3xl font-bold tracking-tight">Manage Products</h1>
 
-            <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <PlusCircle className="w-4 h-4 mr-2" /> Add Product
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Add New Product</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleAddSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-3">
+              <select
+                value={categoryFilter}
+                onChange={(e) => handleCategoryFilterChange(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="all">All Categories</option>
+                <option value="smartphones">Smartphones</option>
+                <option value="accessories">Accessories</option>
+                <option value="plans">Plans</option>
+              </select>
+
+              <Dialog open={addOpen} onOpenChange={setAddOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <PlusCircle className="w-4 h-4 mr-2" /> Add Product
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Add New Product</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="name">Name</Label>
+                        <Input
+                          id="name"
+                          value={form.name}
+                          onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="brand">Brand</Label>
+                        <Input
+                          id="brand"
+                          value={form.brand}
+                          onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="category">Category</Label>
+                        <select
+                          id="category"
+                          value={form.category}
+                          onChange={(e) => setForm({ ...form, category: e.target.value })}
+                          className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          <option value="smartphones">Smartphones</option>
+                          <option value="accessories">Accessories</option>
+                          <option value="plans">Plans</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="price">Price</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          step="0.01"
+                          value={form.price}
+                          onChange={(e) => setForm({ ...form, price: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-1.5">
-                      <Label htmlFor="name">Name</Label>
+                      <Label htmlFor="imageUrl">Image URL</Label>
                       <Input
-                        id="name"
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        required
+                        id="imageUrl"
+                        value={form.imageUrl}
+                        onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                        placeholder="/images/phone-1.png"
                       />
                     </div>
+
                     <div className="space-y-1.5">
-                      <Label htmlFor="brand">Brand</Label>
+                      <Label htmlFor="badge">Badge (optional)</Label>
                       <Input
-                        id="brand"
-                        value={form.brand}
-                        onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                        required
+                        id="badge"
+                        value={form.badge}
+                        onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                        placeholder="New, Sale, etc."
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="category">Category</Label>
-                      <select
-                        id="category"
-                        value={form.category}
-                        onChange={(e) => setForm({ ...form, category: e.target.value })}
-                        className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                      >
-                        <option value="smartphones">Smartphones</option>
-                        <option value="accessories">Accessories</option>
-                        <option value="plans">Plans</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="price">Price</Label>
+                      <Label htmlFor="description">Description</Label>
                       <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        value={form.price}
-                        onChange={(e) => setForm({ ...form, price: e.target.value })}
-                        required
+                        id="description"
+                        value={form.description}
+                        onChange={(e) => setForm({ ...form, description: e.target.value })}
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="imageUrl">Image URL</Label>
-                    <Input
-                      id="imageUrl"
-                      value={form.imageUrl}
-                      onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                      placeholder="/images/phone-1.png"
-                    />
-                  </div>
+                    <div className="flex items-center gap-6">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={form.inStock}
+                          onChange={(e) => setForm({ ...form, inStock: e.target.checked })}
+                        />
+                        In Stock
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={form.featured}
+                          onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                        />
+                        Featured
+                      </label>
+                    </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="badge">Badge (optional)</Label>
-                    <Input
-                      id="badge"
-                      value={form.badge}
-                      onChange={(e) => setForm({ ...form, badge: e.target.value })}
-                      placeholder="New, Sale, etc."
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
-                      value={form.description}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={form.inStock}
-                        onChange={(e) => setForm({ ...form, inStock: e.target.checked })}
-                      />
-                      In Stock
-                    </label>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={form.featured}
-                        onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-                      />
-                      Featured
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-2">
-                    <Button type="button" variant="ghost" onClick={() => setAddOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={createProduct.isPending}>
-                      {createProduct.isPending ? "Creating..." : "Create Product"}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button type="button" variant="ghost" onClick={() => setAddOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={createProduct.isPending}>
+                        {createProduct.isPending ? "Creating..." : "Create Product"}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
           <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
@@ -356,12 +383,12 @@ export default function Admin() {
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading products...</TableCell>
                   </TableRow>
-                ) : products?.length === 0 ? (
+                ) : filteredProducts?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No products found.</TableCell>
                   </TableRow>
                 ) : (
-                  products?.map(product => (
+                  paginatedProducts?.map(product => (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium text-muted-foreground">{product.id}</TableCell>
                       <TableCell>
@@ -444,6 +471,32 @@ export default function Admin() {
               </TableBody>
             </Table>
           </div>
+
+          {!isLoading && (filteredProducts?.length || 0) > PRODUCTS_PER_PAGE && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Page {productPage} of {totalProductPages}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setProductPage((p) => Math.max(1, p - 1))}
+                  disabled={productPage === 1}
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setProductPage((p) => Math.min(totalProductPages, p + 1))}
+                  disabled={productPage === totalProductPages}
+                >
+                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -461,6 +514,7 @@ export default function Admin() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Order</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Address / Phone</TableHead>
                   <TableHead>Items</TableHead>
@@ -472,16 +526,19 @@ export default function Admin() {
               <TableBody>
                 {ordersLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading orders...</TableCell>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading orders...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No orders yet.</TableCell>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No orders yet.</TableCell>
                   </TableRow>
                 ) : (
                   orders.map(order => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium text-muted-foreground">#{order.id}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </TableCell>
                       <TableCell>{order.customerName}</TableCell>
                       <TableCell className="text-sm">
                         <div>{order.address}</div>
@@ -531,7 +588,3 @@ export default function Admin() {
     </div>
   );
 }
-
-
-
-
