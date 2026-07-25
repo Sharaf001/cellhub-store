@@ -2,7 +2,6 @@ import { Router, type IRouter } from "express";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import { OAuth2Client } from "google-auth-library";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
@@ -14,21 +13,32 @@ const GOOGLE_CLIENT_ID = "428603962922-41krvu4298aonse55mh0b42546re2bfs.apps.goo
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+async function sendEmail(to: string, subject: string, html: string) {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": process.env.BREVO_API_KEY || "",
+    },
+    body: JSON.stringify({
+      sender: { name: "CellHub", email: process.env.GMAIL_USER },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Email send failed: ${res.status} ${errText}`);
+  }
+}
 
 async function sendVerificationEmail(to: string, username: string, token: string) {
   const link = `${APP_URL}/verify?token=${token}`;
-  await transporter.sendMail({
-    from: `"CellHub" <${process.env.GMAIL_USER}>`,
+  await sendEmail(
     to,
-    subject: "Verify your CellHub account",
-    html: `
+    "Verify your CellHub account",
+    `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>Welcome to CellHub, ${username}!</h2>
         <p>Please confirm your email address to activate your account.</p>
@@ -40,17 +50,16 @@ async function sendVerificationEmail(to: string, username: string, token: string
         <p>Or copy this link into your browser:</p>
         <p style="word-break: break-all; color: #555;">${link}</p>
       </div>
-    `,
-  });
+    `
+  );
 }
 
 async function sendResetEmail(to: string, username: string, token: string) {
   const link = `${APP_URL}/reset-password?token=${token}`;
-  await transporter.sendMail({
-    from: `"CellHub" <${process.env.GMAIL_USER}>`,
+  await sendEmail(
     to,
-    subject: "Reset your CellHub password",
-    html: `
+    "Reset your CellHub password",
+    `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>Hi ${username},</h2>
         <p>We received a request to reset your CellHub password. This link expires in 1 hour.</p>
@@ -63,8 +72,8 @@ async function sendResetEmail(to: string, username: string, token: string) {
         <p style="word-break: break-all; color: #555;">${link}</p>
         <p style="color:#888; font-size:13px; margin-top:24px;">If you didn't request this, you can safely ignore this email.</p>
       </div>
-    `,
-  });
+    `
+  );
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -323,7 +332,6 @@ router.post("/auth/forgot-password", async (req, res): Promise<void> => {
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
 
-  // Always respond the same way whether the email exists or not (avoid leaking account existence)
   if (user && user.passwordHash) {
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
@@ -368,7 +376,3 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
 });
 
 export default router;
-
-
-
-

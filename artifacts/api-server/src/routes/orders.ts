@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 import { eq, desc } from "drizzle-orm";
 import { db, cartItemsTable, productsTable, ordersTable, orderItemsTable, usersTable } from "@workspace/db";
 
@@ -9,23 +8,34 @@ const router: IRouter = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "cellhub-dev-secret-key-change-in-production";
 const ADMIN_EMAIL = process.env.GMAIL_USER || "";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+async function sendEmail(to: string, subject: string, html: string) {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": process.env.BREVO_API_KEY || "",
+    },
+    body: JSON.stringify({
+      sender: { name: "CellHub", email: process.env.GMAIL_USER },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Email send failed: ${res.status} ${errText}`);
+  }
+}
 
 async function sendAdminOrderNotification(order: any, items: any[]) {
   const itemsHtml = items
     .map((i) => `<li>${i.product.name} x${i.quantity} &mdash; $${(i.product.price * i.quantity).toFixed(2)}</li>`)
     .join("");
-  await transporter.sendMail({
-    from: `"CellHub" <${process.env.GMAIL_USER}>`,
-    to: ADMIN_EMAIL,
-    subject: `New order #${order.id} needs confirmation`,
-    html: `
+  await sendEmail(
+    ADMIN_EMAIL,
+    `New order #${order.id} needs confirmation`,
+    `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>New Order #${order.id}</h2>
         <p><strong>Customer:</strong> ${order.customerName}</p>
@@ -35,24 +45,23 @@ async function sendAdminOrderNotification(order: any, items: any[]) {
         <p><strong>Total:</strong> $${order.total.toFixed(2)} (Cash on Delivery)</p>
         <p>Please review and confirm this order in the Admin Panel.</p>
       </div>
-    `,
-  });
+    `
+  );
 }
 
 async function sendCustomerConfirmationEmail(to: string, customerName: string, orderId: number) {
-  await transporter.sendMail({
-    from: `"CellHub" <${process.env.GMAIL_USER}>`,
+  await sendEmail(
     to,
-    subject: `Your CellHub order #${orderId} is confirmed`,
-    html: `
+    `Your CellHub order #${orderId} is confirmed`,
+    `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>Hi ${customerName},</h2>
         <p>Your order <strong>#${orderId}</strong> has been confirmed and is being prepared for delivery.</p>
         <p>You'll pay by cash on delivery when it arrives.</p>
         <p>Thanks for shopping with CellHub!</p>
       </div>
-    `,
-  });
+    `
+  );
 }
 
 function getUserId(req: any, res: any): number | null {
@@ -268,4 +277,3 @@ router.delete("/admin/orders", async (req, res): Promise<void> => {
 });
 
 export default router;
-
