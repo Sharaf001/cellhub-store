@@ -46,6 +46,10 @@ export default function Checkout() {
       toast({ title: "Please fill in all fields", variant: "destructive" });
       return;
     }
+    if (!/^\d+$/.test(phone.trim())) {
+      toast({ title: "Invalid phone number", description: "Phone number should contain digits only.", variant: "destructive" });
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -160,4 +164,6 @@ export default function Checkout() {
     </div>
   );
 }
+
+
 

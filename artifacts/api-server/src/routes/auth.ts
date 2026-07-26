@@ -79,7 +79,10 @@ async function sendResetEmail(to: string, username: string, token: string) {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 router.post("/auth/register", async (req, res): Promise<void> => {
-  const { username, email, password, role, adminSecret } = req.body ?? {};
+  let { username, email } = req.body ?? {};
+  const { password, role, adminSecret } = req.body ?? {};
+  username = typeof username === "string" ? username.trim() : username;
+  email = typeof email === "string" ? email.trim() : email;
 
   if (typeof username !== "string" || username.length < 3 || username.length > 50) {
     res.status(400).json({ error: "Username must be between 3 and 50 characters." });
@@ -164,7 +167,9 @@ router.get("/auth/verify", async (req, res): Promise<void> => {
 });
 
 router.post("/auth/login", async (req, res): Promise<void> => {
-  const { username, password } = req.body ?? {};
+  let { username } = req.body ?? {};
+  const { password } = req.body ?? {};
+  username = typeof username === "string" ? username.trim() : username;
   if (typeof username !== "string" || !username || typeof password !== "string" || !password) {
     res.status(400).json({ error: "Username and password are required." });
     return;
@@ -376,3 +381,4 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
 });
 
 export default router;
+
