@@ -17,6 +17,7 @@ import Verify from "@/pages/Verify";
 import Account from "@/pages/Account";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import { Footer } from "@/components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ function App() {
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <Router />
+            <Footer />
           </WouterRouter>
           <Toaster />
         </TooltipProvider>
@@ -67,3 +69,4 @@ function App() {
 }
 
 export default App;
+
