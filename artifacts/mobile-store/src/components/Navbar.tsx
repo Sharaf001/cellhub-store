@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useSearch } from "wouter";
-import { ShoppingCart, Smartphone, Menu, Search, X, LogOut, LogIn, PackageSearch, UserCircle2 } from "lucide-react";
+import { ShoppingCart, Smartphone, Menu, Search, X, LogOut, LogIn, PackageSearch, UserCircle2, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGetCartSummary } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Switch } from "@/components/ui/switch";
+import { getStoredTheme, applyTheme, type Theme } from "@/lib/theme";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +29,13 @@ export function Navbar() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(getStoredTheme());
+
+  const handleThemeToggle = (checked: boolean) => {
+    const newTheme: Theme = checked ? "dark" : "light";
+    setTheme(newTheme);
+    applyTheme(newTheme);
+  };
 
   useEffect(() => {
     if (searchOpen) {
@@ -160,6 +169,16 @@ export function Navbar() {
 
                 <div className="h-px bg-border my-2" />
 
+                <div className="px-3 py-2.5 flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    {theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                    Dark Mode
+                  </span>
+                  <Switch checked={theme === "dark"} onCheckedChange={handleThemeToggle} />
+                </div>
+
+                <div className="h-px bg-border my-2" />
+
                 <Link href="/cart" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-md hover:bg-muted transition-colors flex items-center justify-between">
                   <span className="flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Cart</span>
                   {itemCount > 0 && (
@@ -204,4 +223,5 @@ export function Navbar() {
     </header>
   );
 }
+
 
