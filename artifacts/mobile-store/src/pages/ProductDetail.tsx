@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useGetProduct, useAddToCart, getGetCartSummaryQueryKey, getGetCartQueryKey, useListProducts } from "@workspace/api-client-react";
 import { useParams, Link, useLocation } from "wouter";
@@ -23,6 +24,7 @@ export default function ProductDetail() {
     { query: { enabled: !!product } }
   );
 
+  const [detailImgLoaded, setDetailImgLoaded] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const addToCart = useAddToCart();
@@ -109,7 +111,7 @@ export default function ProductDetail() {
         <div className="container mx-auto px-4 py-12">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-24 mb-24">
             {/* Image Gallery */}
-            <div className="relative bg-muted/30 rounded-3xl p-12 flex items-center justify-center aspect-square border">
+            <div className="relative bg-white dark:bg-neutral-100 rounded-3xl p-12 flex items-center justify-center aspect-square border">
               {product.badge && (
                 <Badge className="absolute top-6 left-6 text-sm px-3 py-1 font-bold z-10">
                   {product.badge}
@@ -119,7 +121,8 @@ export default function ProductDetail() {
                 <img 
                   src={product.imageUrl} 
                   alt={product.name} 
-                  className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+                  onLoad={() => setDetailImgLoaded(true)}
+                  className={`w-full h-full object-contain mix-blend-multiply transition-all duration-500 ${detailImgLoaded ? "blur-0 opacity-100" : "blur-md opacity-70"}`}
                 />
               ) : (
                 <div className="w-48 h-64 bg-muted-foreground/20 rounded-xl" />
@@ -205,4 +208,6 @@ export default function ProductDetail() {
     </div>
   );
 }
+
+
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ export function ProductCard({ product }: { product: Product }) {
   const addToCart = useAddToCart();
   const { isLoggedIn } = useAuth();
   const [, navigate] = useLocation();
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/products/${product.id}`} className="group h-full flex">
       <Card className="flex flex-col w-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border/50 bg-card group-hover:border-primary/20">
-        <div className="relative aspect-square bg-muted/30 p-6 flex items-center justify-center overflow-hidden">
+        <div className="relative aspect-square bg-white dark:bg-neutral-100 p-6 flex items-center justify-center overflow-hidden">
           {product.badge && (
             <Badge className="absolute top-3 left-3 z-10 font-bold tracking-wide pointer-events-none">
               {product.badge}
@@ -56,7 +58,8 @@ export function ProductCard({ product }: { product: Product }) {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-110"
+              onLoad={() => setImgLoaded(true)}
+              className={`w-full h-full object-contain mix-blend-multiply transition-all duration-500 group-hover:scale-110 ${imgLoaded ? "blur-0 opacity-100" : "blur-md opacity-70"}`}
               loading="lazy"
             />
           ) : (
@@ -92,4 +95,3 @@ export function ProductCard({ product }: { product: Product }) {
     </Link>
   );
 }
-
