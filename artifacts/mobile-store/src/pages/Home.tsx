@@ -109,7 +109,7 @@ export default function Home() {
                       {getCategoryIcon(category.slug)}
                     </div>
                     <h3 className="font-semibold text-lg capitalize mb-1 group-hover:text-primary transition-colors">{category.name}</h3>
-                    <p className="text-sm text-muted-foreground">{category.productCount || 0} Products</p>
+                    <p className="text-sm text-muted-foreground">{category.productCount || 0} {category.name}</p>
                   </div>
                 </Link>
               ))}
@@ -155,3 +155,4 @@ export default function Home() {
     </div>
   );
 }
+

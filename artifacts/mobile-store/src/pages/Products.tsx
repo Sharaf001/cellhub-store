@@ -186,7 +186,7 @@ export default function Products() {
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                 <Search className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-bold mb-2">No products found</h3>
+              <h3 className="text-xl font-bold mb-2">No {currentCategory !== "all" ? <span className="capitalize">{currentCategory}</span> : "products"} found</h3>
               <p className="text-muted-foreground max-w-md">
                 We couldn't find any products matching your current filters. Try adjusting your search or categories.
               </p>
@@ -206,3 +206,4 @@ export default function Products() {
     </div>
   );
 }
+
