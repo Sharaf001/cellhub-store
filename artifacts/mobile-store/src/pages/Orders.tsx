@@ -85,7 +85,7 @@ export default function Orders() {
               <div key={order.id} className="bg-card border rounded-2xl shadow-sm p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <div className="font-semibold text-lg">Order #{order.id}</div>
+                    <div className="font-semibold text-lg">Order</div>
                     <div className="text-sm text-muted-foreground">
                       {new Date(order.createdAt).toLocaleString()}
                     </div>
@@ -117,5 +117,6 @@ export default function Orders() {
     </div>
   );
 }
+
 
 

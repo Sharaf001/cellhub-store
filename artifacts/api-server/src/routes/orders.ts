@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import jwt from "jsonwebtoken";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db, cartItemsTable, productsTable, ordersTable, orderItemsTable, usersTable } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -273,7 +273,9 @@ router.delete("/admin/orders", async (req, res): Promise<void> => {
   if (adminId === null) return;
 
   await db.delete(ordersTable);
+  await db.execute(sql`ALTER SEQUENCE orders_id_seq RESTART WITH 1`);
   res.sendStatus(204);
 });
 
 export default router;
+
