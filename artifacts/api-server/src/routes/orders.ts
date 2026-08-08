@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import { eq, desc, sql } from "drizzle-orm";
 import { db, cartItemsTable, productsTable, ordersTable, orderItemsTable, usersTable } from "@workspace/db";
 
@@ -7,6 +8,14 @@ const router: IRouter = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "cellhub-dev-secret-key-change-in-production";
 const ADMIN_EMAIL = process.env.GMAIL_USER || "";
+
+const orderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: "Too many orders placed. Please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 async function sendEmail(to: string, subject: string, html: string) {
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -98,7 +107,7 @@ function getAdminUserId(req: any, res: any): number | null {
   }
 }
 
-router.post("/orders", async (req, res): Promise<void> => {
+router.post("/orders", orderLimiter, async (req, res): Promise<void> => {
   const userId = getUserId(req, res);
   if (userId === null) return;
 
@@ -278,4 +287,5 @@ router.delete("/admin/orders", async (req, res): Promise<void> => {
 });
 
 export default router;
+
 

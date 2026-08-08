@@ -3,6 +3,7 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
+import rateLimit from "express-rate-limit";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 
@@ -12,6 +13,14 @@ const ADMIN_REGISTRATION_SECRET = process.env.ADMIN_REGISTRATION_SECRET || "cell
 const GOOGLE_CLIENT_ID = "428603962922-41krvu4298aonse55mh0b42546re2bfs.apps.googleusercontent.com";
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: "Too many attempts. Please try again in a few minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 async function sendEmail(to: string, subject: string, html: string) {
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -78,7 +87,7 @@ async function sendResetEmail(to: string, username: string, token: string) {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-router.post("/auth/register", async (req, res): Promise<void> => {
+router.post("/auth/register", authLimiter, async (req, res): Promise<void> => {
   let { username, email } = req.body ?? {};
   const { password, role, adminSecret } = req.body ?? {};
   username = typeof username === "string" ? username.trim() : username;
@@ -166,7 +175,7 @@ router.get("/auth/verify", async (req, res): Promise<void> => {
   res.json({ message: "Email verified! You can now log in." });
 });
 
-router.post("/auth/login", async (req, res): Promise<void> => {
+router.post("/auth/login", authLimiter, async (req, res): Promise<void> => {
   let { username } = req.body ?? {};
   const { password } = req.body ?? {};
   username = typeof username === "string" ? username.trim() : username;
@@ -328,7 +337,7 @@ router.post("/auth/change-password", async (req, res): Promise<void> => {
   res.json({ message: "Password updated successfully." });
 });
 
-router.post("/auth/forgot-password", async (req, res): Promise<void> => {
+router.post("/auth/forgot-password", authLimiter, async (req, res): Promise<void> => {
   const { email } = req.body ?? {};
   if (typeof email !== "string" || !email) {
     res.status(400).json({ error: "Email is required." });
@@ -381,4 +390,5 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
 });
 
 export default router;
+
 

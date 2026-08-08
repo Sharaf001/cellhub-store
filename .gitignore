@@ -5,3 +5,5 @@ dist/
 *.log
 .cache/
 .local/
+
+lib/db/backups/
