@@ -46,4 +46,27 @@ app.get("/download/cellhub", (_req, res) => {
 
 app.use("/api", router);
 
+// Temporary diagnostic error handler - logs the real underlying error
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error(
+    {
+      message: err?.message,
+      cause: err?.cause?.message ?? err?.cause,
+      code: err?.code,
+      stack: err?.stack,
+    },
+    "Unhandled request error",
+  );
+
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+
+  res.status(500).json({
+    error: err?.message ?? "Internal Server Error",
+    cause: err?.cause?.message ?? err?.cause,
+  });
+});
+
 export default app;
